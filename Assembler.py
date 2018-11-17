@@ -16,8 +16,11 @@ New Approach to Assembler -- Get each line and send that to a function
 instructionComponent = ""  # We append to the instruction component the characters to get the instruction component like "ADD"
 machineInstruction = ""
 isData = False
-isControl = False
+isMemory = False
 isBranch = False
+
+# Key - Value pair for Data, Memory, and Branch
+Data = dict(ADD="00", SUB="01", AND="10", OR="11")
 
 
 # End of Global Variables
@@ -29,7 +32,7 @@ def assembler(inputFileArg, outputFileArg):
     global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
     global machineInstruction
     global isData
-    global isControl
+    global isMemory
     global isBranch
 
     for line in inputFile:
@@ -47,15 +50,16 @@ def assembler(inputFileArg, outputFileArg):
             # call that method
             if isData:
                 isDataInstruction()
-            elif isControl:
-                isControlInstruction()
+            elif isMemory:
+                isMemoryInstruction()
             elif isBranch:
                 isBranchInstruction()
 
         isData = False
-        isControl = False
+        isMemory = False
         isBranch = False
 
+    outputFile.write(machineInstruction)
     outputFile.write("\n")
 
     inputFile.closed  # close the file
@@ -77,11 +81,11 @@ def instructionToMachine():
     global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
     global machineInstruction
     global isData
-    global isControl
+    global isMemory
     global isBranch
 
     isDataInstruction()
-    isControlInstruction()
+    isMemoryInstruction()
     isBranchInstruction()
 
     # return switch.get(instructionComponent, "Invalid")  # i is the key, and outputs the value
@@ -91,72 +95,44 @@ def isDataInstruction():
     global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
     global machineInstruction
     global isData
-    global isControl
+    global isMemory
     global isBranch
+    global Data
 
     machineInstructionComponent = ""
 
     # If the instruction is one of the following then it is indeed associated with Data Therefore we set the boolean
     # value to true, and then we begin to translate from assembly to machine based on instruction set\
     # Handles bits 27 : 26 of machineInstruction
-    if instructionComponent == "ADD":
-        machineInstructionComponent = "00"
+
+    # iterate over Data dictionary and if value is spotted then we can append to the machineInstructions and set
+    # boolean vars
+
+    # Iterate through dictionary and see if the instruction component is there, if it is set boolean val to true and append to machineInstruction
+    if instructionComponent in Data:
+        machineInstructionComponent = Data[instructionComponent]
+        machineInstruction = machineInstruction + machineInstructionComponent
         isData = True
 
-    elif instructionComponent == "SUB":
-        machineInstructionComponent = "01"
-        isData = True
-
-    elif instructionComponent == "AND":
-        machineInstructionComponent = "10"
-        isData = True
-
-    elif instructionComponent == "OR":
-        machineInstructionComponent = "11"
-        isData = True
-
-    machineInstruction = machineInstruction + machineInstructionComponent
 
 
-def isControlInstruction():
+def isMemoryInstruction():
     global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
     global machineInstruction
     global isData
-    global isControl
+    global isMemory
     global isBranch
 
-    machineInstructionComponent = ""
 
-    # If the instruction is one of the following then it is indeed associated with Data Therefore we set the boolean
-    # value to true, and then we begin to translate from assembly to machine based on instruction set\
-    # Handles bits 27 : 26 of machineInstruction
-    if instructionComponent == "ADD":
-        machineInstructionComponent = "00"
-        isData = True
-
-    elif instructionComponent == "SUB":
-        machineInstructionComponent = "01"
-        isData = True
-
-    elif instructionComponent == "AND":
-        machineInstructionComponent = "10"
-        isData = True
-
-    elif instructionComponent == "OR":
-        machineInstructionComponent = "11"
-        isData = True
-
-    machineInstruction = machineInstruction + machineInstructionComponent
 
 
 def isBranchInstruction():
     global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
     global machineInstruction
     global isData
-    global isControl
+    global isMemory
     global isBranch
 
-    print("C")
 
 
 if __name__ == '__main__':
