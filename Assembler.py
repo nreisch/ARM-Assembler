@@ -1,46 +1,65 @@
 # ARM assembler
 
 """
+Component:
+    - Have to deal with whether the instruction is associated with data, memory, or branching
+    -
+Idea: Have multiple function calls in instructionToMachine and have that returned from that method
+--------------------------------------
+New Approach to Assembler -- Get each line and send that to a function
+-- First just deal with Datapath instructions
 
- First component: read an input from a textfile, analyzes each line
- Second Component: For each line in the input file, write out to an output file
- New Component:
-    - When reading the line have to separate chars in the line to account for each component, we call each character componentChar of that instruction - so get a resulting string
-    - We call it instructionComponent which is the operational code - may be RD, ADD, some other instruction and we add that to the resutling string
-New Component:
-    - Just deal with the basic inputs
 """
+
+# Global Variables
+
+instructionComponent = ""  # We append to the instruction component the characters to get the instruction component like "ADD"
+machineInstruction = ""
+isData = False
+isControl = False
+isBranch = False
+
+
+# End of Global Variables
 def assembler(inputFileArg, outputFileArg):
-    inputFile = open(inputFileArg,"r") # r means open for reading
-    outputFile = open(outputFileArg,"w+") # w because we will write to the file, + means if no file create one
+    inputFile = open(inputFileArg, "r")  # r means open for reading
+    outputFile = open(outputFileArg, "w+")  # w because we will write to the file, + means if no file create one
+
+    # Declare global variables for use in method
+    global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
+    global machineInstruction
+    global isData
+    global isControl
+    global isBranch
 
     for line in inputFile:
-        # Holds the resulting string for each component and we send this to a method to analyze what instruction it is
-        instructionComponent = ""
-        # The machine code that our assembler will send to output
-        machineInstruction = ""
-
-        # line is a text string, for every line we have to analyze the strings and iterate through the string for the instructions
+        # Analyze until the first space and send that to determine if Datapath, Control, or Branch
         for charComponent in line:
-            # * Will mark end of line, Second if statement takes care of last instruction not having a space at the end
-            if (charComponent == "-"):
-                machineInstruction = instructionToMachine(instructionComponent)  # returns the resulting ones and zeros for that component
-                outputFile.write(machineInstruction)
+            # To first analyze if this will be a data, control, or branch instruction set
+            if charComponent == " ":
+                instructionToMachine()  # Argument would be instructionComponent but using globals because not returning any values
                 instructionComponent = ""
-            elif(charComponent != " "):
-                instructionComponent = instructionComponent + charComponent
+
             else:
-                # If the component is a space that means we first analyze the instructionComponent and send it to our method
-                # Then we bring the instructionComponent back to an empty string to analyze next portion
-                machineInstruction = instructionToMachine(instructionComponent) #returns the resulting ones and zeros for that component
-                outputFile.write(machineInstruction)
-                instructionComponent = ""
+                instructionComponent = instructionComponent + charComponent
+
+            # The function that calls it will change the associated boolean and depending on which one it is will
+            # call that method
+            if isData:
+                isDataInstruction()
+            elif isControl:
+                isControlInstruction()
+            elif isBranch:
+                isBranchInstruction()
+
+        isData = False
+        isControl = False
+        isBranch = False
 
     outputFile.write("\n")
 
-    inputFile.closed # close the file
-    outputFile.closed # close the file
-
+    inputFile.closed  # close the file
+    outputFile.closed  # close the file
 
 
 """
@@ -48,19 +67,97 @@ def assembler(inputFileArg, outputFileArg):
 Evaluates the instruction and outputs the machine code
 
 """
-def instructionToMachine(instructionKey):
+
+
+def instructionToMachine():
     # Key - Value
 
-    # Might need to call other helper methods on Instruction Key -- not entirely sure yet
-    switch = {
-        "ADD":"1",
-        "SUB":"0"
+    # Call helper methods to determine if data, control, or branch
 
-    }
+    global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
+    global machineInstruction
+    global isData
+    global isControl
+    global isBranch
 
-    return switch.get(instructionKey,"Invalid") # i is the key, and outputs the value
+    isDataInstruction()
+    isControlInstruction()
+    isBranchInstruction()
 
+    # return switch.get(instructionComponent, "Invalid")  # i is the key, and outputs the value
+
+
+def isDataInstruction():
+    global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
+    global machineInstruction
+    global isData
+    global isControl
+    global isBranch
+
+    machineInstructionComponent = ""
+
+    # If the instruction is one of the following then it is indeed associated with Data Therefore we set the boolean
+    # value to true, and then we begin to translate from assembly to machine based on instruction set\
+    # Handles bits 27 : 26 of machineInstruction
+    if instructionComponent == "ADD":
+        machineInstructionComponent = "00"
+        isData = True
+
+    elif instructionComponent == "SUB":
+        machineInstructionComponent = "01"
+        isData = True
+
+    elif instructionComponent == "AND":
+        machineInstructionComponent = "10"
+        isData = True
+
+    elif instructionComponent == "OR":
+        machineInstructionComponent = "11"
+        isData = True
+
+    machineInstruction = machineInstruction + machineInstructionComponent
+
+
+def isControlInstruction():
+    global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
+    global machineInstruction
+    global isData
+    global isControl
+    global isBranch
+
+    machineInstructionComponent = ""
+
+    # If the instruction is one of the following then it is indeed associated with Data Therefore we set the boolean
+    # value to true, and then we begin to translate from assembly to machine based on instruction set\
+    # Handles bits 27 : 26 of machineInstruction
+    if instructionComponent == "ADD":
+        machineInstructionComponent = "00"
+        isData = True
+
+    elif instructionComponent == "SUB":
+        machineInstructionComponent = "01"
+        isData = True
+
+    elif instructionComponent == "AND":
+        machineInstructionComponent = "10"
+        isData = True
+
+    elif instructionComponent == "OR":
+        machineInstructionComponent = "11"
+        isData = True
+
+    machineInstruction = machineInstruction + machineInstructionComponent
+
+
+def isBranchInstruction():
+    global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
+    global machineInstruction
+    global isData
+    global isControl
+    global isBranch
+
+    print("C")
 
 
 if __name__ == '__main__':
-    assembler("program.txt","output.txt")
+    assembler("program.txt", "output.txt")
