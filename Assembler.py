@@ -11,6 +11,7 @@ New Approach to Assembler -- Get each line and send that to a function
 
 """
 
+#####################################
 # Global Variables
 
 instructionComponent = ""  # We append to the instruction component the characters to get the instruction component like "ADD"
@@ -19,8 +20,20 @@ isData = False
 isMemory = False
 isBranch = False
 
+# Boolean variables to check what we have analyzed so far
+
+# Data Booleans and bits
+cmdBool = False
+cmd = ""
+sBool = False
+s = ""
+
+############################
+
 # Key - Value pair for Data, Memory, and Branch
-Data = dict(ADD="00", SUB="01", AND="10", OR="11")
+Data = dict(ADD="0100", SUB="0010", AND="1000", OR="1111", ) # S is 0,
+dataBranch = dict(ADDS="0100", SUBS="0010", ANDS="10", ORS="11", ) # S will be 1
+
 
 
 # End of Global Variables
@@ -59,8 +72,13 @@ def assembler(inputFileArg, outputFileArg):
         isMemory = False
         isBranch = False
 
-    outputFile.write(machineInstruction)
-    outputFile.write("\n")
+        # After we have scanned the line, append to the String each of the bits
+
+        # machineInstruction = cond + op + I + cmd + s + Rn + Rd + SRC2
+        machineInstruction = cmd + s
+
+        outputFile.write(machineInstruction)
+        outputFile.write("\n")
 
     inputFile.closed  # close the file
     outputFile.closed  # close the file
@@ -78,12 +96,6 @@ def instructionToMachine():
 
     # Call helper methods to determine if data, control, or branch
 
-    global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
-    global machineInstruction
-    global isData
-    global isMemory
-    global isBranch
-
     isDataInstruction()
     isMemoryInstruction()
     isBranchInstruction()
@@ -99,7 +111,11 @@ def isDataInstruction():
     global isBranch
     global Data
 
-    machineInstructionComponent = ""
+    # Data Boolean vars and Strings
+    global cmdBool
+    global cmd
+    global sBool
+    global s
 
     # If the instruction is one of the following then it is indeed associated with Data Therefore we set the boolean
     # value to true, and then we begin to translate from assembly to machine based on instruction set\
@@ -109,9 +125,25 @@ def isDataInstruction():
     # boolean vars
 
     # Iterate through dictionary and see if the instruction component is there, if it is set boolean val to true and append to machineInstruction
+    # First analyze the type of data instruction
     if instructionComponent in Data:
-        machineInstructionComponent = Data[instructionComponent]
-        machineInstruction = machineInstruction + machineInstructionComponent
+
+        if cmdBool == False and sBool == False:
+            cmd = Data[instructionComponent]
+            s = "0"
+            cmdBool = True
+            sBool = True
+
+        isData = True
+
+    ## Has an extra s for data instruction so sets certain flags
+    elif instructionComponent in dataBranch:
+        if cmdBool == False and sBool == False:
+            cmd = dataBranch[instructionComponent]
+            s = "1"
+            cmdBool = True
+            sBool = True
+
         isData = True
 
 
@@ -124,15 +156,12 @@ def isMemoryInstruction():
     global isBranch
 
 
-
-
 def isBranchInstruction():
     global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
     global machineInstruction
     global isData
     global isMemory
     global isBranch
-
 
 
 if __name__ == '__main__':
