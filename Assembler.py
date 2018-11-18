@@ -21,9 +21,23 @@ isBranch = False
 # Boolean variables to check what we have analyzed so far
 
 # Data Booleans and bits
-condBool, opBool, cmdBool, sBool, rnBool, rdBool, iBool, srcBool, commaSeparated = False
-cond, op, cmd, s, rn, rd, i, src = ""
-
+condBool = False
+opBool = False
+cmdBool = False
+sBool = False
+rnBool = False
+rdBool = False
+iBool = False
+srcBool = False
+commaSeparated = False
+cond = ""
+op = ""
+cmd = ""
+s = ""
+rn = ""
+rd = ""
+i = ""
+src = ""
 
 regCount = 0
 
@@ -49,10 +63,19 @@ def assembler(inputFileArg, outputFileArg):
     global instructionComponent, machineInstruction, isData, isMemory, isBranch, commaSeparated, condBool, cond, opBool, op, iBool, i, \
         cmdBool, cmd, sBool, s, rnBool, rn, rdBool, rd, srcBool, src, regCount
 
+
     for line in inputFile:
         # Analyze until the first space and send that to determine if Datapath, Control, or Branch
-        iBool, srcBool, rdBool, rnBool, commaSeparated, condBool, cmdBool, opBool, sBool = False
-
+        iBool = False
+        srcBool = False
+        rdBool = False
+        rnBool = False
+        commaSeparated = False
+        condBool = False
+        cmdBool = False
+        opBool = False
+        sBool = False
+        regCount = 0
         regCount = 0
 
         count = 0
