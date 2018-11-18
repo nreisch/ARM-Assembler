@@ -49,6 +49,8 @@ src = ""
 
 commaSeparated = False
 
+regCount = 0
+
 ############################
 
 # Key - Value pair for Data, Memory, and Branch
@@ -67,19 +69,22 @@ def assembler(inputFileArg, outputFileArg):
     outputFile = open(outputFileArg, "w+")  # w because we will write to the file, + means if no file create one
 
     # Declare global variables for use in method
-    global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
-    global machineInstruction
-    global isData
-    global isMemory
-    global isBranch
-    global commaSeparated
-    global iBool
-    global srcBool
+    global instructionComponent, machineInstruction, isData, isMemory, isBranch, commaSeparated, condBool, cond, opBool, op, iBool, i,\
+        cmdBool, cmd, sBool, s, rnBool, rn, rdBool, rd, srcBool, src, regCount
 
     for line in inputFile:
         # Analyze until the first space and send that to determine if Datapath, Control, or Branch
         iBool = False
         srcBool = False
+        rdBool = False
+        rnBool = False
+        commaSeparated = False
+        condBool = False
+        cmdBool = False
+        opBool = False
+        sBool = False
+        regCount = 0
+
 
         count = 0
         for charComponent in line:
@@ -190,6 +195,7 @@ def isDataInstruction():
     global rd
     global srcBool
     global src
+    global regCount
 
     # If the instruction is one of the following then it is indeed associated with Data Therefore we set the boolean
     # value to true, and then we begin to translate from assembly to machine based on instruction set\
@@ -222,6 +228,7 @@ def isDataInstruction():
 
     #### Now that we know we have a Data instruction use the boolean variable isData and others to test for rest of sequence
 
+
     if isData and condBool == False:
         cond = "1110"
         condBool = True
@@ -230,29 +237,39 @@ def isDataInstruction():
         op = "00"
         opBool = True
 
-    # Test for registers based on immediate and convert those to machine We have reached the point of sequence where
-    # we will analyze RD which is the destination and given that opBool is true we know it will either be a register
-    # or a # immediate value
-    if isData and rnBool == False and rdBool == False and opBool == True:
-        if instructionComponent in registers:
-            rd = registers[instructionComponent]
-            rdBool = True
-
-    elif isData and rnBool == False and rdBool == True and opBool == True:
-        if instructionComponent in registers:
-            rn = registers[instructionComponent]
-            rnBool = True
-
     if isData and iBool == False:
         i = "0"
 
     elif isData and iBool == True:
         i = "1"
 
+    # Test for registers based on immediate and convert those to machine We have reached the point of sequence where
+    # we will analyze RD which is the destination and given that opBool is true we know it will either be a register
+    # or a # immediate value
+    if isData and rnBool == False and rdBool == False and opBool == True:
+        if instructionComponent in registers:
+            rd = registers[instructionComponent]
+            regCount = regCount + 1
+            rdBool = True
+            return
+
+    elif isData and rnBool == False and rdBool == True and opBool == True:
+        if instructionComponent in registers:
+            rn = registers[instructionComponent]
+            regCount = regCount + 1
+            rnBool = True
+            return
+
+    # If we have encountered Rd and Rn and we have reached a new instruction that is a register then srcBool = True
+
+    if regCount == 2:
+        srcBool = True
+
     # Converting from Hex to Bit value
     if isData and iBool == True and srcBool == True:
         src = fromHexToBinary(instructionComponent)
-
+    elif isData and iBool == False and srcBool == True:
+        src = registers[instructionComponent]
     elif isData and iBool == False and srcBool == False:
         src = "00000000000"
 
