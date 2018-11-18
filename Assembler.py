@@ -23,17 +23,33 @@ isBranch = False
 # Boolean variables to check what we have analyzed so far
 
 # Data Booleans and bits
+condBool = False
+cond = ""
+
+opBool = False
+op = ""
+
 cmdBool = False
 cmd = ""
+
 sBool = False
 s = ""
+
+rnBool = False
+rn = ""
+
+rdBool = False
+rd = ""
+
+commaSeparated = False
 
 ############################
 
 # Key - Value pair for Data, Memory, and Branch
-Data = dict(ADD="0100", SUB="0010", AND="1000", OR="1111", ) # S is 0,
-dataBranch = dict(ADDS="0100", SUBS="0010", ANDS="10", ORS="11", ) # S will be 1
-
+Data = dict(ADD="0100", SUB="0010", AND="1000", OR="1111", )  # S is 0,
+dataSet = dict(ADDS="0100", SUBS="0010", ANDS="10", ORS="11", )  # S will be 1
+registers = dict(R0="0000", R1="0001", R2="0010", R3="0011", R4="0010", R5="0101", R6="0110", R7="0111", R8="1000",
+                 R9="1001", R10="1010", R11="1011", R12="1100", R13="1101", R14="1110", R15="1111")
 
 
 # End of Global Variables
@@ -47,26 +63,41 @@ def assembler(inputFileArg, outputFileArg):
     global isData
     global isMemory
     global isBranch
+    global commaSeparated
 
     for line in inputFile:
         # Analyze until the first space and send that to determine if Datapath, Control, or Branch
         for charComponent in line:
-            # To first analyze if this will be a data, control, or branch instruction set
-            if charComponent == " ":
+            # To first analyze if this will be a data, control, or branch instruction set After look at comma there
+            # will be a space so only evaluate if comma set to False, otherwise if commaTrue neglect the next space
+            if charComponent == " " and commaSeparated == False:
+                val = instructionComponent
                 instructionToMachine()  # Argument would be instructionComponent but using globals because not returning any values
                 instructionComponent = ""
+            elif charComponent == " " and commaSeparated == True:
+                commaSeparated = False
+                instructionComponent = ""
+            elif charComponent == ",":
+                val = instructionComponent
+                instructionToMachine()  # Argument would be instructionComponent but using globals because not returning any values
+                instructionComponent = ""
+                commaSeparated = True
 
             else:
                 instructionComponent = instructionComponent + charComponent
 
-            # The function that calls it will change the associated boolean and depending on which one it is will
-            # call that method
-            if isData:
-                isDataInstruction()
-            elif isMemory:
-                isMemoryInstruction()
-            elif isBranch:
-                isBranchInstruction()
+                # The function that calls it will change the associated boolean and depending on which one it is will
+                # call that method
+        """
+        ## Not really necessary because by the time this is hit, the instructionComponent will be empty
+        
+        if isData:
+            isDataInstruction()
+        elif isMemory:
+            isMemoryInstruction()
+        elif isBranch:
+            isBranchInstruction()
+        """
 
         isData = False
         isMemory = False
@@ -75,7 +106,7 @@ def assembler(inputFileArg, outputFileArg):
         # After we have scanned the line, append to the String each of the bits
 
         # machineInstruction = cond + op + I + cmd + s + Rn + Rd + SRC2
-        machineInstruction = cmd + s
+        machineInstruction = cond + " " + op + " " + cmd + " " + s + " " + rn + " " + rd
 
         outputFile.write(machineInstruction)
         outputFile.write("\n")
@@ -112,10 +143,18 @@ def isDataInstruction():
     global Data
 
     # Data Boolean vars and Strings
+    global condBool
+    global cond
+    global opBool
+    global op
     global cmdBool
     global cmd
     global sBool
     global s
+    global rnBool
+    global rn
+    global rdBool
+    global rd
 
     # If the instruction is one of the following then it is indeed associated with Data Therefore we set the boolean
     # value to true, and then we begin to translate from assembly to machine based on instruction set\
@@ -137,15 +176,36 @@ def isDataInstruction():
         isData = True
 
     ## Has an extra s for data instruction so sets certain flags
-    elif instructionComponent in dataBranch:
+    elif instructionComponent in dataSet:
         if cmdBool == False and sBool == False:
-            cmd = dataBranch[instructionComponent]
+            cmd = dataSet[instructionComponent]
             s = "1"
             cmdBool = True
             sBool = True
 
         isData = True
 
+    #### Now that we know we have a Data instruction use the boolean variable isData and others to test for rest of sequence
+
+    if isData and condBool == False:
+        cond = "1110"
+        condBool = True
+
+    if isData and opBool == False:
+        op = "00"
+        opBool = True
+
+    ### Test for registers based on immediate and convert those to machine
+    ## We have reached the point of sequence where we will analyze RD which is the destination and given that opBool is true we know it will either be a register or a # immediate value
+    if isData and rnBool == False and rdBool == False and opBool == True:
+        if instructionComponent in registers:
+            rd = registers[instructionComponent]
+            rdBool = True
+
+    elif isData and rnBool == False and rdBool == True and opBool == True:
+        if instructionComponent in registers:
+            rn = registers[instructionComponent]
+            rnBool = True
 
 
 def isMemoryInstruction():
