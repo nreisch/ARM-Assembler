@@ -1,13 +1,11 @@
 # ARM assembler
 
 """
-Component:
-    - Have to deal with whether the instruction is associated with data, memory, or branching
-    -
-Idea: Have multiple function calls in instructionToMachine and have that returned from that method
 --------------------------------------
-New Approach to Assembler -- Get each line and send that to a function
+Approach to Assembler
+-- Get each line and send that to a function
 -- First just deal with Datapath instructions
+
 
 """
 
@@ -23,31 +21,9 @@ isBranch = False
 # Boolean variables to check what we have analyzed so far
 
 # Data Booleans and bits
-condBool = False
-cond = ""
+condBool, opBool, cmdBool, sBool, rnBool, rdBool, iBool, srcBool, commaSeparated = False
+cond, op, cmd, s, rn, rd, i, src = ""
 
-opBool = False
-op = ""
-
-cmdBool = False
-cmd = ""
-
-sBool = False
-s = "0"
-
-rnBool = False
-rn = ""
-
-rdBool = False
-rd = ""
-
-iBool = False
-i = ""
-
-srcBool = False
-src = ""
-
-commaSeparated = False
 
 regCount = 0
 
@@ -59,9 +35,10 @@ dataSet = dict(ADDS="0100", SUBS="0010", ANDS="1000", ORS="1111", )  # S will be
 registers = dict(R0="0000", R1="0001", R2="0010", R3="0011", R4="0010", R5="0101", R6="0110", R7="0111", R8="1000",
                  R9="1001", R10="1010", R11="1011", R12="1100", R13="1101", R14="1110", R15="1111")
 hexCode = {
-    "1":"0001", "2":"0010", "3":"0011", "4":"0100", "5":"0101", "6":"0110", "7":"0111", "8":"1000",
-    "9":"1001", 'A':"1010", 'B':"1011", 'C':"1100", 'D':"1101", 'E':"1110", 'F':"1111"
+    "1": "0001", "2": "0010", "3": "0011", "4": "0100", "5": "0101", "6": "0110", "7": "0111", "8": "1000",
+    "9": "1001", 'A': "1010", 'B': "1011", 'C': "1100", 'D': "1101", 'E': "1110", 'F': "1111"
 }
+
 
 # End of Global Variables
 def assembler(inputFileArg, outputFileArg):
@@ -69,33 +46,25 @@ def assembler(inputFileArg, outputFileArg):
     outputFile = open(outputFileArg, "w+")  # w because we will write to the file, + means if no file create one
 
     # Declare global variables for use in method
-    global instructionComponent, machineInstruction, isData, isMemory, isBranch, commaSeparated, condBool, cond, opBool, op, iBool, i,\
+    global instructionComponent, machineInstruction, isData, isMemory, isBranch, commaSeparated, condBool, cond, opBool, op, iBool, i, \
         cmdBool, cmd, sBool, s, rnBool, rn, rdBool, rd, srcBool, src, regCount
 
     for line in inputFile:
         # Analyze until the first space and send that to determine if Datapath, Control, or Branch
-        iBool = False
-        srcBool = False
-        rdBool = False
-        rnBool = False
-        commaSeparated = False
-        condBool = False
-        cmdBool = False
-        opBool = False
-        sBool = False
-        regCount = 0
+        iBool, srcBool, rdBool, rnBool, commaSeparated, condBool, cmdBool, opBool, sBool = False
 
+        regCount = 0
 
         count = 0
         for charComponent in line:
             length = len(line)
             # To first analyze if this will be a data, control, or branch instruction set After look at comma there
             # will be a space so only evaluate if comma set to False, otherwise if commaTrue neglect the next space
-            if charComponent == " "  and commaSeparated == False:
+            if charComponent == " " and commaSeparated == False:
                 val = instructionComponent
                 instructionToMachine()  # Argument would be instructionComponent but using globals because not returning any values
                 instructionComponent = ""
-            elif count == length-1:
+            elif count == length - 1:
                 val = instructionComponent
                 instructionToMachine()  # Argument would be instructionComponent but using globals because not returning any values
                 instructionComponent = ""
@@ -158,6 +127,7 @@ Evaluates the instruction and outputs the machine code
 
 """
 
+
 def instructionToMachine():
     # Key - Value
 
@@ -171,31 +141,10 @@ def instructionToMachine():
 
 
 def isDataInstruction():
-    global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
-    global machineInstruction
-    global isData
-    global isMemory
-    global isBranch
-    global Data
+    global instructionComponent, machineInstruction, isData, isMemory, isBranch, Data
 
     # Data Boolean vars and Strings
-    global condBool
-    global cond
-    global opBool
-    global op
-    global iBool
-    global i
-    global cmdBool
-    global cmd
-    global sBool
-    global s
-    global rnBool
-    global rn
-    global rdBool
-    global rd
-    global srcBool
-    global src
-    global regCount
+    global condBool, cond, opBool, op, iBool, i, cmdBool, cmd, sBool, s, rnBool, rn, rdBool, rd, srcBool, src, regCount
 
     # If the instruction is one of the following then it is indeed associated with Data Therefore we set the boolean
     # value to true, and then we begin to translate from assembly to machine based on instruction set\
@@ -275,7 +224,7 @@ def isDataInstruction():
 
 
 def isMemoryInstruction():
-    global instructionComponent  # We append to the instruction component the characters to get the instruction component like "ADD"
+    global instructionComponent
     global machineInstruction
     global isData
     global isMemory
@@ -298,6 +247,7 @@ def fromHexToBinary(instructionComponent):
             result += hexCode[key]
 
     return result
+
 
 if __name__ == '__main__':
     assembler("program.txt", "output.txt")
