@@ -94,17 +94,8 @@ def assembler(inputFileArg, outputFileArg):
                 # call that method
 
             count = count + 1
-        """
-        ## Not really necessary because by the time this is hit, the instructionComponent will be empty
-        
-        if isData:
-            isDataInstruction()
-        elif isMemory:
-            isMemoryInstruction()
-        elif isBranch:
-            isBranchInstruction()
-        """
 
+        # At the end of the line, set the boolean vars back to False to account for the next line
         isData = False
         isMemory = False
         isBranch = False
