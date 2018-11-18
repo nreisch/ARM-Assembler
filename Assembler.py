@@ -33,13 +33,19 @@ cmdBool = False
 cmd = ""
 
 sBool = False
-s = ""
+s = "0"
 
 rnBool = False
 rn = ""
 
 rdBool = False
 rd = ""
+
+iBool = False
+i = ""
+
+srcBool = False
+src = ""
 
 commaSeparated = False
 
@@ -64,13 +70,22 @@ def assembler(inputFileArg, outputFileArg):
     global isMemory
     global isBranch
     global commaSeparated
+    global iBool
+    global srcBool
+
 
     for line in inputFile:
         # Analyze until the first space and send that to determine if Datapath, Control, or Branch
+        count = 0
         for charComponent in line:
+            length = len(line)
             # To first analyze if this will be a data, control, or branch instruction set After look at comma there
             # will be a space so only evaluate if comma set to False, otherwise if commaTrue neglect the next space
-            if charComponent == " " and commaSeparated == False:
+            if charComponent == " "  and commaSeparated == False:
+                val = instructionComponent
+                instructionToMachine()  # Argument would be instructionComponent but using globals because not returning any values
+                instructionComponent = ""
+            elif count == length-1:
                 val = instructionComponent
                 instructionToMachine()  # Argument would be instructionComponent but using globals because not returning any values
                 instructionComponent = ""
@@ -82,12 +97,24 @@ def assembler(inputFileArg, outputFileArg):
                 instructionToMachine()  # Argument would be instructionComponent but using globals because not returning any values
                 instructionComponent = ""
                 commaSeparated = True
+            # The value in src is an immediate and not from a Reg
+            elif charComponent == '#':
+                iBool = True
+                srcBool = True
+                instructionComponent = ""
+            elif charComponent == " " and iBool == True and srcBool == True:
+                val = instructionComponent
+                instructionToMachine()
+                instructionComponent = ""
+                iBool = False
 
             else:
                 instructionComponent = instructionComponent + charComponent
 
                 # The function that calls it will change the associated boolean and depending on which one it is will
                 # call that method
+
+            count = count + 1
         """
         ## Not really necessary because by the time this is hit, the instructionComponent will be empty
         
@@ -106,7 +133,7 @@ def assembler(inputFileArg, outputFileArg):
         # After we have scanned the line, append to the String each of the bits
 
         # machineInstruction = cond + op + I + cmd + s + Rn + Rd + SRC2
-        machineInstruction = cond + " " + op + " " + cmd + " " + s + " " + rn + " " + rd
+        machineInstruction = cond + " " + op + " " + i + " " + cmd + " " + s + " " + rn + " " + rd + " " + src
 
         outputFile.write(machineInstruction)
         outputFile.write("\n")
@@ -147,6 +174,8 @@ def isDataInstruction():
     global cond
     global opBool
     global op
+    global iBool
+    global i
     global cmdBool
     global cmd
     global sBool
@@ -155,6 +184,8 @@ def isDataInstruction():
     global rn
     global rdBool
     global rd
+    global srcBool
+    global src
 
     # If the instruction is one of the following then it is indeed associated with Data Therefore we set the boolean
     # value to true, and then we begin to translate from assembly to machine based on instruction set\
@@ -195,8 +226,9 @@ def isDataInstruction():
         op = "00"
         opBool = True
 
-    ### Test for registers based on immediate and convert those to machine
-    ## We have reached the point of sequence where we will analyze RD which is the destination and given that opBool is true we know it will either be a register or a # immediate value
+    # Test for registers based on immediate and convert those to machine We have reached the point of sequence where
+    # we will analyze RD which is the destination and given that opBool is true we know it will either be a register
+    # or a # immediate value
     if isData and rnBool == False and rdBool == False and opBool == True:
         if instructionComponent in registers:
             rd = registers[instructionComponent]
@@ -206,6 +238,19 @@ def isDataInstruction():
         if instructionComponent in registers:
             rn = registers[instructionComponent]
             rnBool = True
+
+    if isData and iBool == False:
+        i = "0"
+
+    elif isData and iBool == True:
+        i = "1"
+
+    # Converting from Hex to Bit value
+    if isData and iBool == True and srcBool == True:
+        src = fromHexToBinary(instructionComponent)
+
+    elif isData and iBool == False and srcBool == False:
+        src = "00000000000"
 
 
 def isMemoryInstruction():
@@ -222,6 +267,47 @@ def isBranchInstruction():
     global isData
     global isMemory
     global isBranch
+
+
+def fromHexToBinary(instructionComponent):
+    result = ""
+
+    ## Figure out how to do Hex to binary given a String like 42
+    for hexCode in instructionComponent:
+        if hexCode == '0':
+            result = result + "0000"
+        elif hexCode == '1':
+            result = result + "0001"
+        elif hexCode == '2':
+            result = result + "0010"
+        elif hexCode == '3':
+            result = result + "0011"
+        elif hexCode == '4':
+            result = result + "0100"
+        elif hexCode == '5':
+            result = result + "0101"
+        elif hexCode == '6':
+            result = result + "0110"
+        elif hexCode == '7':
+            result = result + "0111"
+        elif hexCode == '8':
+            result = result + "1000"
+        elif hexCode == '9':
+            result = result + "10001"
+        elif hexCode == 'A':
+            result = result + "1010"
+        elif hexCode == 'B':
+            result = result + "1011"
+        elif hexCode == 'C':
+            result = result + "1100"
+        elif hexCode == 'D':
+            result = result + "1101"
+        elif hexCode == 'E':
+            result = result + "1110"
+        elif hexCode == 'F':
+            result = result + "1111"
+            
+    return result
 
 
 if __name__ == '__main__':
