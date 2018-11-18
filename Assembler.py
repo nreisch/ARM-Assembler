@@ -56,7 +56,10 @@ Data = dict(ADD="0100", SUB="0010", AND="1000", OR="1111", )  # S is 0,
 dataSet = dict(ADDS="0100", SUBS="0010", ANDS="10", ORS="11", )  # S will be 1
 registers = dict(R0="0000", R1="0001", R2="0010", R3="0011", R4="0010", R5="0101", R6="0110", R7="0111", R8="1000",
                  R9="1001", R10="1010", R11="1011", R12="1100", R13="1101", R14="1110", R15="1111")
-
+hexCode = {
+    "1":"0001", "2":"0010", "3":"0011", "4":"0100", "5":"0101", "6":"0110", "7":"0111", "8":"1000",
+    "9":"1001", 'A':"1010", 'B':"1011", 'C':"1100", 'D':"1101", 'E':"1110", 'F':"1111"
+}
 
 # End of Global Variables
 def assembler(inputFileArg, outputFileArg):
@@ -147,7 +150,6 @@ def assembler(inputFileArg, outputFileArg):
 Evaluates the instruction and outputs the machine code
 
 """
-
 
 def instructionToMachine():
     # Key - Value
@@ -270,45 +272,13 @@ def isBranchInstruction():
 
 
 def fromHexToBinary(instructionComponent):
+    # Hex to Binary
     result = ""
+    for key in instructionComponent:
+        if key in hexCode:
+            result += hexCode[key]
 
-    ## Figure out how to do Hex to binary given a String like 42
-    for hexCode in instructionComponent:
-        if hexCode == '0':
-            result = result + "0000"
-        elif hexCode == '1':
-            result = result + "0001"
-        elif hexCode == '2':
-            result = result + "0010"
-        elif hexCode == '3':
-            result = result + "0011"
-        elif hexCode == '4':
-            result = result + "0100"
-        elif hexCode == '5':
-            result = result + "0101"
-        elif hexCode == '6':
-            result = result + "0110"
-        elif hexCode == '7':
-            result = result + "0111"
-        elif hexCode == '8':
-            result = result + "1000"
-        elif hexCode == '9':
-            result = result + "10001"
-        elif hexCode == 'A':
-            result = result + "1010"
-        elif hexCode == 'B':
-            result = result + "1011"
-        elif hexCode == 'C':
-            result = result + "1100"
-        elif hexCode == 'D':
-            result = result + "1101"
-        elif hexCode == 'E':
-            result = result + "1110"
-        elif hexCode == 'F':
-            result = result + "1111"
-            
     return result
-
 
 if __name__ == '__main__':
     assembler("program.txt", "output.txt")
