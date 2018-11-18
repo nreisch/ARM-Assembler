@@ -38,6 +38,8 @@ rn = ""
 rd = ""
 i = ""
 src = ""
+imm8 = ""
+shiftBool = False
 
 regCount = 0
 
@@ -46,7 +48,7 @@ regCount = 0
 # Key - Value pair for Data, Memory, and Branch
 Data = dict(ADD="0100", SUB="0010", AND="1000", OR="1111", )  # S is 0,
 dataSet = dict(ADDS="0100", SUBS="0010", ANDS="1000", ORS="1111", )  # S will be 1
-registers = dict(R0="0000", R1="0001", R2="0010", R3="0011", R4="0010", R5="0101", R6="0110", R7="0111", R8="1000",
+registers = dict(R0="0000", R1="0001", R2="0010", R3="0011", R4="0100", R5="0101", R6="0110", R7="0111", R8="1000",
                  R9="1001", R10="1010", R11="1011", R12="1100", R13="1101", R14="1110", R15="1111")
 hexCode = {
     "1": "0001", "2": "0010", "3": "0011", "4": "0100", "5": "0101", "6": "0110", "7": "0111", "8": "1000",
@@ -61,7 +63,7 @@ def assembler(inputFileArg, outputFileArg):
 
     # Declare global variables for use in method
     global instructionComponent, machineInstruction, isData, isMemory, isBranch, commaSeparated, condBool, cond, opBool, op, iBool, i, \
-        cmdBool, cmd, sBool, s, rnBool, rn, rdBool, rd, srcBool, src, regCount
+        cmdBool, cmd, sBool, s, rnBool, rn, rdBool, rd, srcBool, src, regCount, imm8, shiftBool
 
 
     for line in inputFile:
@@ -77,6 +79,7 @@ def assembler(inputFileArg, outputFileArg):
         sBool = False
         regCount = 0
         regCount = 0
+        instructionComponent = ""
 
         count = 0
         for charComponent in line:
@@ -126,7 +129,14 @@ def assembler(inputFileArg, outputFileArg):
         # After we have scanned the line, append to the String each of the bits
 
         # machineInstruction = cond + op + I + cmd + s + Rn + Rd + SRC2
-        machineInstruction = cond + " " + op + " " + i + " " + cmd + " " + s + " " + rn + " " + rd + " " + src
+        # if there is an immediate value, and there is a 2nd source...
+        # Then we want to use imm8, if shift == False, rot = 0000
+        if iBool is True and srcBool is True:
+            machineInstruction = cond + " " + op + " " + i + " " + cmd + " " + s + " " + rn + " " + rd + " " + rot + " " + imm8
+        elif iBool is False and srcBool is True:
+            machineInstruction = cond + " " + op + " " + i + " " + cmd + " " + s + " " + rn + " " + rd + " " + rot + " " + imm8
+        else:
+            machineInstruction = cond + " " + op + " " + i + " " + cmd + " " + s + " " + rn + " " + rd + " " + " " + src
 
         outputFile.write(machineInstruction)
         outputFile.write("\n")
@@ -158,7 +168,8 @@ def isDataInstruction():
     global instructionComponent, machineInstruction, isData, isMemory, isBranch, Data
 
     # Data Boolean vars and Strings
-    global condBool, cond, opBool, op, iBool, i, cmdBool, cmd, sBool, s, rnBool, rn, rdBool, rd, srcBool, src, regCount
+    global condBool, cond, opBool, op, iBool, i, cmdBool, cmd, sBool, s, rnBool, rn
+    global rdBool, rd, srcBool, src, regCount, shiftBool, imm8, rot
 
     # If the instruction is one of the following then it is indeed associated with Data Therefore we set the boolean
     # value to true, and then we begin to translate from assembly to machine based on instruction set\
@@ -192,31 +203,31 @@ def isDataInstruction():
     #### Now that we know we have a Data instruction use the boolean variable isData and others to test for rest of sequence
 
 
-    if isData and condBool == False:
+    if isData and condBool is False:
         cond = "1110"
         condBool = True
 
-    if isData and opBool == False:
+    if isData and opBool is False:
         op = "00"
         opBool = True
 
-    if isData and iBool == False:
+    if isData and iBool is False:
         i = "0"
 
-    elif isData and iBool == True:
+    elif isData and iBool is True:
         i = "1"
 
     # Test for registers based on immediate and convert those to machine We have reached the point of sequence where
     # we will analyze RD which is the destination and given that opBool is true we know it will either be a register
     # or a # immediate value
-    if isData and rnBool == False and rdBool == False and opBool == True:
+    if isData and rnBool is False and rdBool is False and opBool is True:
         if instructionComponent in registers:
             rd = registers[instructionComponent]
             regCount = regCount + 1
             rdBool = True
             return
 
-    elif isData and rnBool == False and rdBool == True and opBool == True:
+    elif isData and rnBool is False and rdBool is True and opBool is True:
         if instructionComponent in registers:
             rn = registers[instructionComponent]
             regCount = regCount + 1
@@ -228,13 +239,22 @@ def isDataInstruction():
     if regCount == 2:
         srcBool = True
 
+    val = instructionComponent
     # Converting from Hex to Bit value
-    if isData and iBool == True and srcBool == True:
-        src = fromHexToBinary(instructionComponent)
-    elif isData and iBool == False and srcBool == True:
-        src = registers[instructionComponent]
-    elif isData and iBool == False and srcBool == False:
+    if isData and iBool is True and shiftBool is False and srcBool is True:
+        imm8 = fromHexToBinary(instructionComponent)
+        rot = "0000"
+    # If there is a case of shifting then we have to change rot and then change the src -- COME BACK TO
+    elif isData and iBool is True and shiftBool is True and srcBool:
+        print("Not sure yet")
+    elif isData and iBool is False and srcBool is True:
+        imm8 = registers[instructionComponent]
+
+        rot = "0000"
+    elif isData and iBool is False and srcBool is False:
         src = "00000000000"
+        rot = "0000"
+
 
 
 def isMemoryInstruction():
