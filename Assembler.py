@@ -53,7 +53,7 @@ commaSeparated = False
 
 # Key - Value pair for Data, Memory, and Branch
 Data = dict(ADD="0100", SUB="0010", AND="1000", OR="1111", )  # S is 0,
-dataSet = dict(ADDS="0100", SUBS="0010", ANDS="10", ORS="11", )  # S will be 1
+dataSet = dict(ADDS="0100", SUBS="0010", ANDS="1000", ORS="1111", )  # S will be 1
 registers = dict(R0="0000", R1="0001", R2="0010", R3="0011", R4="0010", R5="0101", R6="0110", R7="0111", R8="1000",
                  R9="1001", R10="1010", R11="1011", R12="1100", R13="1101", R14="1110", R15="1111")
 hexCode = {
@@ -76,9 +76,11 @@ def assembler(inputFileArg, outputFileArg):
     global iBool
     global srcBool
 
-
     for line in inputFile:
         # Analyze until the first space and send that to determine if Datapath, Control, or Branch
+        iBool = False
+        srcBool = False
+
         count = 0
         for charComponent in line:
             length = len(line)
