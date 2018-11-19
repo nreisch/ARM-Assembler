@@ -98,10 +98,6 @@ def assembler(inputFileArg, outputFileArg):
                 val = instructionComponent
                 instructionToMachine()  # Argument would be instructionComponent but using globals because not returning any values
                 instructionComponent = ""
-            elif count == length - 1:
-                val = instructionComponent
-                instructionToMachine()  # Argument would be instructionComponent but using globals because not returning any values
-                instructionComponent = ""
             elif charComponent == " " and commaSeparated == True:
                 commaSeparated = False
                 instructionComponent = ""
@@ -120,7 +116,11 @@ def assembler(inputFileArg, outputFileArg):
                 instructionToMachine()
                 instructionComponent = ""
                 iBool = False
-
+            elif count == length - 1:
+                val = instructionComponent
+                instructionComponent = instructionComponent + charComponent
+                instructionToMachine()  # Argument would be instructionComponent but using globals because not returning any values
+                instructionComponent = ""
             else:
                 instructionComponent = instructionComponent + charComponent
 
@@ -292,6 +292,9 @@ def decToBinary(instructionComponent):
         result = '0' + result
 
     return result
+
+# Next thing to do is to get the value of instruction component and check to see if it is > than 255, if it is then
+# We have to use a rotational value and we will set another boolean value to check if this rotation is needed and how to set
 
 
 if __name__ == '__main__':

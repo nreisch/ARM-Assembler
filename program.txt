@@ -1,2 +1,1 @@
-ADD R0, R1, #42
-SUB R4, R7, R5
+ADD R1, R12
