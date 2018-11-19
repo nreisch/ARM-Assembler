@@ -45,9 +45,9 @@ regCount = 0
 ############################
 
 # Key - Value pair for data, Memory, and Branch
-data = dict(ADD="0100", SUB="0010", AND="1000", OR="1111", )  # S is 0,
+data = dict(ADD="0100", SUB="0010", AND="0000", ORR="1100", )  # S is 0,
 
-dataSet = dict(ADDS="0100", SUBS="0010", ANDS="1000", ORS="1111", )  # S will be 1
+dataSet = dict(ADDS="0100", SUBS="0010", ANDS="0000", ORS="1100", )  # S will be 1
 
 registers = dict(R0="0000", R1="0001", R2="0010", R3="0011", R4="0100", R5="0101", R6="0110", R7="0111", R8="1000",
                  R9="1001", R10="1010", R11="1011", R12="1100", R13="1101", R14="1110", R15="1111")
@@ -73,8 +73,9 @@ def assembler(inputFileArg, outputFileArg):
     # Declare global variables for use in method
     global instructionComponent, machineInstruction, isData, isMemory, isBranch, commaSeparated, condBool, cond, opBool, op, iBool, i, \
         cmdBool, cmd, sBool, s, rnBool, rn, rdBool, rd, srcBool, src, regCount, imm8, shiftBool
-
+    lineCount = 0
     for line in inputFile:
+        lineCount = lineCount + 1
         # Analyze until the first space and send that to determine if Datapath, Control, or Branch
         iBool = False
         srcBool = False
@@ -116,10 +117,12 @@ def assembler(inputFileArg, outputFileArg):
                 instructionToMachine()
                 instructionComponent = ""
                 iBool = False
-            elif count == length - 1:
-                val = instructionComponent
-                instructionComponent = instructionComponent + charComponent
-                instructionToMachine()  # Argument would be instructionComponent but using globals because not returning any values
+            elif count == length-1:
+                if "\n" in charComponent:
+                    instructionComponent = instructionComponent
+                else:
+                    instructionComponent = instructionComponent + charComponent
+                instructionToMachine()
                 instructionComponent = ""
             else:
                 instructionComponent = instructionComponent + charComponent
